@@ -19,17 +19,18 @@ library(HaDeX)
 library(ggplot2)
 library(knitr)
 library(DT)
+library(dplyr)
 opts_chunk$set(fig.width = 7, fig.height = 5)
 ```
 
  
 # About HaDeX
 
-HaDeX is a novel tool for processing, analysis and visualisation of HDX-MS experiments. HaDeX covers the final parts of the analytic process, including comparison of experiments, quality control and generation of publication-quality figures. To make the HaDeX **R** package available to the less **R**-fluent users, we enhanced it with a comprehensive Graphical User Interface available as a HaDeX GUI. The reproducibility of the whole procedure is ensured with advanced reporting functions. 
+HaDeX is a novel tool for processing, analysis, and visualization of HDX-MS experiments. HaDeX covers the final parts of the analytic process, including a comparison of experiments, quality control and generation of publication-quality figures. To make the HaDeX **R** package available to the less **R**-fluent users, we enhanced it with a comprehensive Graphical User Interface available as a HaDeX GUI. The reproducibility of the whole procedure is ensured with advanced reporting functions. 
 
-The GUI is availble online: http://mslab-ibb.pl/shiny/HaDeX/ or can be installed locally on Windows systems: https://sourceforge.net/projects/hadex/files/HaDeX_setup.exe/download. Alternatively, R-fluent users can access the GUI through the [HaDeX_gui()](https://hadexversum.github.io/HaDeX/reference/HaDeX_gui.html) function.  
+The GUI is available online: http://mslab-ibb.pl/shiny/HaDeX/ or can be installed locally on Windows systems: https://sourceforge.net/projects/hadex/files/HaDeX_setup.exe/download. Alternatively, R-fluent users can access the GUI through the [HaDeX_gui()](https://hadexversum.github.io/HaDeX/reference/HaDeX_gui.html) function.  
 
-This document covers the main functonalities of both the **R** package and the GUI.
+This document covers the main functionalities of both the **R** package and the GUI.
 
 ## Comparison of the existing HDX-MS software
 
@@ -43,7 +44,45 @@ read.csv2("comparison.csv") %>%
 
 We have not considered HDX Workbench [@PascalHDXWorkbenchSoftware2012] as it deals with the preliminary steps of the analysis.
 
-Opisac poszczegolne rzeczy
+**Web server:** a software is available as a web server.
+
+**Programmatic access:** analytic functionalities are documented and available from a command line.
+
+**Desktop software:** a software can be installed locally.
+
+**Multi-state analysis:** a software supports comparisons of more than two states.
+
+**ISO-based uncertainty:** analytic functions produce ISO-compatible uncertainty intervals. 
+
+**Coverage and peptide overlap:** overview of experimental sequence coverage is available in a user-friendly way.
+
+**Quality control:** additional information about course of the experiment.
+
+**N- and C-terminal length corrections:** manual correction of sequence length.
+
+**Global visualization of deuterium uptake:** deuterium uptake for different states is shown together for comparison.
+
+**Woods plot:** deuteration difference between chosen states shown in the format of Woods plot.
+
+**Zooming of the Woods plot:** Woods plot can be zoomed in. 
+
+**Customizable label names and colors:** Labels and colors on the plot can be changed by the user.
+
+**Peptide kinetics chart:** Kinetics plot (deuteration change in time) are available for each peptide.
+
+**3D structure visualization:** structure of the protein is visualized in 3D.
+
+**Downloadable charts:** charts are downloadable, preferably in a vector format (.eps, .svg or .pdf).
+
+**Deuterium uptake download:** data shown on Woods plot is downloadable (e.q. as CSV file).
+
+**Downloadable results of intermediate computations:** results of intermediate computations (e.q. pure deuteration data) are downloadable.
+
+**Report generation:** generates a report (e.q. in Html format) with results of the analysis with parametrization.
+
+**PyMol export:** exports data to the [PyMol](https://pymol.org/2/) format.
+
+**HDX Data Summary:** summary of the experimental data [@MassonRecommendationsperforminginterpreting2019].
 
 # HaDeX functionalities
 
@@ -63,7 +102,7 @@ datatable(
 
 ```
 
-Although data can be imported into R using other tools, we strongly advice to rely on the [read_hdx()](https://hadexversum.github.io/HaDeX/reference/read_hdx.html) function:
+Although data can be imported into R using other tools, we strongly advise to rely on the [read_hdx()](https://hadexversum.github.io/HaDeX/reference/read_hdx.html) function:
 
 ```{r warning=FALSE}
 
@@ -72,7 +111,7 @@ dat <- read_hdx(system.file(package = "HaDeX",
 
 ```
 
-Currently, [read_hdx()](https://hadexversum.github.io/HaDeX/reference/read_hdx.html) supports .csv, .tsv and .xls files fullfilling the data structure described above. 
+Currently, [read_hdx()](https://hadexversum.github.io/HaDeX/reference/read_hdx.html) supports .csv, .tsv and .xls files fulfilling the data structure described above. 
 
 ## Computation of deuteration levels
 
@@ -80,14 +119,14 @@ The computation of the level of deuteration involves several pre-processing step
 
 ### Measured data into overall peptide mass
 
-The results of HDX-MS measurements as given in the DynamX datafiles are represented as the measured mass of peptides plus proton mass to charge ratio ($Center$). For later use, this value has to be transformed into an overall mass of a peptide measured after specific timepoint from a protein in a specific state, as shown in equation 1: 
+The results of HDX-MS measurements as given in the DynamX data files are represented as the measured mass of peptides plus proton mass to charge ratio ($Center$). For later use, this value has to be transformed into an overall mass of a peptide measured after specific time point from a protein in a specific state, as shown in equation 1: 
 
 $$pepMass = z \times (Center-protonMass)\tag{1}$$
 where:
 
 - $pepMass$ - expected mass of the peptide after incubation (Da),
 
-- $protonMass$ - mass of the proton (Da),
+- $protonMass$ - the mass of the proton (Da),
 
 - $z$ - charge of the peptide,
 
@@ -106,6 +145,20 @@ where:
 
 - $N$ - number of replicates.
 
+This data manipulation results from an original data structure. Each repetition of the measurement gives the data for given peptide in a given time per possible value of $z$ as shown in the example below. We need to use the value of $pepMass$ as shown in equation 1 but still keep the information about original measurement - that's why we use the weighted mass. 
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+
+dat_temp <- read.csv(system.file(package = "HaDeX", 
+                            "HaDeX/data/KD_190304_Nucb2_EDTA_CaCl2_test02_clusterdata.csv"))
+
+dat_temp %>% 
+  filter(File == "KD_190119_gg_Nucb2_CaCl2_10s_01", Sequence == "KQFEHLNHQNPDTFEPKDLDML", Exposure == 0.167) %>%
+  select(Sequence, File, z, RT, Inten, Center)
+
+```
+
+
 The uncertainty of a measurement is variability associated with the precision of measuring instrumentation. We present here a novel derivation of uncertainty formulas for HDX-MS data according to the ISO guidelines [@jcgm:2008:EMDG]. Input files always encompass results of more than one measurement. We assume uncorrelatedness of replicates as they come from different samples. Therefore, we average measurements of replicates for each time point and for all protein states. Thus, we compute peptide mass uncertainty $u$ as uncertainty for aggregate estimate using the formula for standard deviation of the mean:
 
 $$u(x) = \sqrt{\frac{ \sum_{i=1}^n \left( x_{i} - \overline{x} \right)^2}{n(n-1)}}\tag{3}$$
@@ -121,7 +174,7 @@ After obtaining the mass of the peptide, we can compute the deuteration level de
 
 ### Experimental deuteration level
 
-The experimental deuteration level is computed as the deuteration level of the peptide from a protein in a specifc state and after incubation time $t$ compared to the deuteration level measured at the start of the incubation ($t_0$). It yields a value for the chosen state and chosen time $t$.
+The experimental deuteration level is computed as the deuteration level of the peptide from a protein in a specific state and after incubation time $t$ compared to the deuteration level measured at the start of the incubation ($t_0$). It yields a value for the chosen state and chosen time $t$.
 
 $$D = D_{t} - D_{t_0}\tag{4}$$
 
@@ -137,7 +190,7 @@ $$D = \frac{D_{t} - D_{t_0}}{D_{t_{out}} - D_{t_0}}\tag{4a}$$
 
 All functions in the HaDeX package contain the logical parameter $relative$ to determine if they should return absolute or relative deuteration levels. 
 
-##### Uncertainty calculations
+#### Uncertainty calculations
 
 We describe the methodology of the uncertainty calculations for relative deuteration levels. The uncertainty for absolute deuteration levels is computed similarly, but without scaling. 
 
@@ -181,17 +234,17 @@ where:
 
 - $protonMass$ - mass of a proton (constant) (Da).
 
-The absolute deuteration level is calculated as in equation 8 but without scalling (equation 8a):
+The absolute deuteration level is calculated as in equation 8 but without scaling (equation 8a):
 
 $$D = D_{t} - MHP\tag{8a}$$
 
-##### Uncertainty calculations
+#### Uncertainty calculations
 
 For functions of one variable uncertainty reduces to:
 
 $$u(y) = \left| \frac{dy}{dx} u(x) \right|.\tag{9}$$
 
-Substituting $D$ from the equation 8, we have
+Substituting $D$ from equation 8, we have
 
 $$u(D) = \left|\frac{1}{MaxUptake \times protonMass} u(D_{t}) \right|\tag{10}$$
 
@@ -338,13 +391,88 @@ add_stat_dependency(calc_dat,
                    relative = TRUE)
 ```
 
+## Kinetic plots
+
+By the term *kinetics* we understand deuteration change in time. To calculate deuteration values per peptide for different time points is used function [calculate_kinetics()](https://hadexversum.github.io/HaDeX/reference/calculate_kinetics.html). This function uses the [calculate_state_deuteration()](https://hadexversum.github.io/HaDeX/reference/calculate_state_deuteration.html) function.
+
+
+```{r warning = FALSE}
+
+(kin_YYDEYL_gg_Nucb2_CaCl2 <- calculate_kinetics(dat = dat, 
+                                                protein = "db_Nucb2", 
+                                                sequence = "YYDEYL",
+                                                state = "gg_Nucb2_CaCl2", 
+                                                start = 45, 
+                                                end = 50, 
+                                                time_in = 0.001, 
+                                                time_out = 1440))
+```
+
+```{r warning = FALSE}
+
+(kin_YYDEYL_gg_Nucb2_EDTA <- calculate_kinetics(dat = dat, 
+                                              protein = "db_Nucb2", 
+                                              sequence = "YYDEYL",
+                                              state = "gg_Nucb2_EDTA", 
+                                              start = 45, 
+                                              end = 50, 
+                                              time_in = 0.001, 
+                                              time_out = 1440))
+```
+
+Calculated data can be shown next to each other on the plot for comparison. To visualize kinetic data we recommend  [plot_kinetics()](https://hadexversum.github.io/HaDeX/reference/plot_kinetics.html) function:
+
+-- theoretical:
+
+- relative values:
+
+```{r warning = FALSE}
+
+bind_rows(kin_YYDEYL_gg_Nucb2_CaCl2, kin_YYDEYL_gg_Nucb2_EDTA) %>%
+  plot_kinetics(theoretical = TRUE, 
+                relative = TRUE)
+
+```
+
+- absolute values:
+
+```{r warning = FALSE}
+
+bind_rows(kin_YYDEYL_gg_Nucb2_CaCl2, kin_YYDEYL_gg_Nucb2_EDTA) %>%
+  plot_kinetics(theoretical = TRUE, 
+                relative = FALSE)
+
+```
+
+-- experimental:
+
+- relative values:
+
+```{r warning = FALSE}
+
+bind_rows(kin_YYDEYL_gg_Nucb2_CaCl2, kin_YYDEYL_gg_Nucb2_EDTA) %>%
+  plot_kinetics(theoretical = FALSE, 
+                relative = TRUE)
+
+```
+
+- absolute values:
+
+```{r warning = FALSE}
+
+bind_rows(kin_YYDEYL_gg_Nucb2_CaCl2, kin_YYDEYL_gg_Nucb2_EDTA) %>%
+  plot_kinetics(theoretical = FALSE, 
+                relative = FALSE)
+
+```
+
 ## Additional tools
 
 HaDeX provides additional tools for assessment of experiments.
 
 ### Peptide coverage
 
-The sequence of protein(s) is reconstructed from the peptides from the input file. Thus, amino acids not covered by peptides are marked as X according to the IUPAC convention. The sequence is reconstructed using the [reconstruct_sequence()](https://hadexversum.github.io/HaDeX/reference/reconstruct_sequence.html) function.
+The sequence of the protein(s) is reconstructed from the peptides from the input file. Thus, amino acids not covered by peptides are marked as X according to the IUPAC convention. The sequence is reconstructed using the [reconstruct_sequence()](https://hadexversum.github.io/HaDeX/reference/reconstruct_sequence.html) function.
 
 ```{r warning=FALSE}
 
@@ -367,7 +495,7 @@ The user can choose which state (or states) should be included in these plots. I
 ### Quality control 
 
 The function [quality_control()](https://hadexversum.github.io/HaDeX/reference/quality_control.html) plots the change in uncertainty of deuteration levels as a function of incubation time. The uncertainty is averaged over all peptides available at a given time point in a selected state. 
-Therefore, the user can detect a time point after which the decrease of the deuteration uncertainty becomes too marginal to prolong the measurements. This function is most useful in case of multiple measurements of the same or very similar proteins, because it helps to optimize the duration of the incubation.
+Therefore, the user can detect a time point after which the decrease of the deuteration uncertainty becomes too marginal to prolong the measurements. This function is most useful in case of multiple measurements of the same or very similar proteins because it helps to optimize the duration of the incubation.
 The result of this function can be easily visualized.
 
 Example:
@@ -383,9 +511,9 @@ result <- quality_control(dat = dat,
 ```
 
 ```{r warning=FALSE}
-ggplot(result[result["time"]>=1,]) + 
-  geom_line(aes(x = time, y = avg_err_state_first, color = "Average error (first state)")) +
-  geom_line(aes(x = time, y = avg_err_state_second, color = "Average error (second state)")) +
+ggplot(result[result["out_time"]>=1,]) + 
+  geom_line(aes(x = out_time, y = avg_err_state_first, color = "Average error (first state)")) +
+  geom_line(aes(x = out_time, y = avg_err_state_second, color = "Average error (second state)")) +
   scale_x_log10() +
   labs(x = "log(time) [min]", y = "Average uncertainty", title = "Uncertainty change") + 
   theme_bw(base_size = 11) +
@@ -406,7 +534,7 @@ The HaDeX Shiny app is launched by the [HaDeX_gui()](https://hadexversum.github.
 
 The interaction between HVEM and the [CD160](https://www.uniprot.org/uniprot/O95971) receptor was measured with HDX-MS.
 
-Firstly, we read the input data, exactly as provided by theDynamX\textsuperscript{TM} 3.0 (Waters Corp.)
+Firstly, we read the input data, exactly as provided by the DynamX\textsuperscript{TM} 3.0 (Waters Corp.)
 
 ```{r warning=FALSE}
 library(HaDeX)
@@ -416,7 +544,7 @@ dat_1 <- read_hdx(system.file(package = "HaDeX",
                               "HaDeX/data/KD_180110_CD160_HVEM.csv"))
 ```
 
-Then, we reconstruct the protein sequence from the peptides measured during the experiment. We observe tha region from amino acid 107 till amino acid 124 is not covered by any peptide.
+Then, we reconstruct the protein sequence from the peptides measured during the experiment. We observe the region from amino acid 107 till amino acid 124 is not covered by any peptide.
 
 ```{r warning=FALSE}
 reconstruct_sequence(dat_1)
@@ -424,7 +552,7 @@ reconstruct_sequence(dat_1)
 plot_position_frequency(dat_1, chosen_state = "CD160")
 ```
 
-The theoretical plot allows to find regions, which exchange quickly (N-terminus, regions between 30-70 amino acid) and regions, which exchange slowly (peptides 15-24, 95-110 amino acid). We can also see the differences in exchange between two states, indicating regions which changed upon binding with other protein.
+The theoretical plot allows finding regions, which exchange quickly (N-terminus, regions between 30-70 amino acid) and regions, which exchange slowly (peptides 15-24, 95-110 amino acid). We can also see the differences in the exchange between two states, indicating regions which changed upon binding with other protein.
 
 ```{r warning=FALSE}
 # calculate data
@@ -477,7 +605,7 @@ comparison_plot(calc_dat = calc_dat_1,
 
 ```
 
-The plot below shows peptides for which levels of deuteration were significantly lower upon binding with other protein (red) and peptides for which levels of exchange were significantly higher upon binding with other protein (blue). The plot also show peptides in which no significant changes in deuteration between states are visible (grey). The biggest changes on the theoretical plot can be observed in 3 peptides (15-24, 30-35, 75-90). 
+The plot below shows peptides for which levels of deuteration were significantly lower upon binding with other protein (red) and peptides for which levels of exchange were significantly higher upon binding with other protein (blue). The plot also shows peptides in which no significant changes in deuteration between states are visible (grey). The biggest changes on the theoretical plot can be observed in 3 peptides (15-24, 30-35, 75-90). 
 
 ```{r warning=FALSE}
   
@@ -526,8 +654,8 @@ woods_plot(calc_dat = calc_dat_1,
 # example quality control visualisation
 library(ggplot2)
 ggplot(result) + 
-  geom_line(aes(x = time, y = avg_err_state_first, color = "Average error (first state)")) +
-  geom_line(aes(x = time, y = avg_err_state_second, color = "Average error (second state)")) +
+  geom_line(aes(x = out_time, y = avg_err_state_first, color = "Average error (first state)")) +
+  geom_line(aes(x = out_time, y = avg_err_state_second, color = "Average error (second state)")) +
   scale_x_log10() +
   ylim(0, 0.05) + 
   labs(x = "log(time) [min]", y = "Average uncertainty", title = "Uncertainty change in out time") +
@@ -624,9 +752,9 @@ woods_plot(calc_dat = calc_dat_2,
 
 # example quality control visualisation - relative values
 library(ggplot2)
-ggplot(result[result["time"]>=1,]) + 
-  geom_line(aes(x = time, y = avg_err_state_first, color = "Average error (first state)")) +
-  geom_line(aes(x = time, y = avg_err_state_second, color = "Average error (second state)")) +
+ggplot(result[result["out_time"]>=1,]) + 
+  geom_line(aes(x = out_time, y = avg_err_state_first, color = "Average error (first state)")) +
+  geom_line(aes(x = out_time, y = avg_err_state_second, color = "Average error (second state)")) +
   scale_x_log10() +
   labs(x = "log(time) [min]", y = "Average uncertainty", title = "Uncertainty change") + 
   theme(legend.position = "bottom",

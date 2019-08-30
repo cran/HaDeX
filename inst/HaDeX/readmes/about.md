@@ -1,6 +1,6 @@
 ## About  
 
-The HaDeX web server relies on functions from the [HaDeX](https://github.com/michbur/HaDeX) **R** package.
+The HaDeX web server relies on functions from the [HaDeX](https://github.com/michbur/HaDeX) **R** package. For more information check our [documentation](https://hadexversum.github.io/HaDeX/). In case of any question or suggestion don't hesitate to contact us. 
 
 ### Authors  
 
@@ -9,7 +9,7 @@ The HaDeX web server relies on functions from the [HaDeX](https://github.com/mic
 
 ### Citation
 
-Puchala W, Burdukiewicz M, Kistowski M, Dabrowska KA, Badaczewska-Dawid AE, Cysewski D and Dadlez M (2019). HaDeX: Analysis and Visualisation of Hydrogen/Deuterium Exchange Mass Spectrometry Data. R package version 0.1.
+Puchala W, Burdukiewicz M, Kistowski M, Dabrowska KA, Badaczewska-Dawid AE, Cysewski D and Dadlez M (2019). HaDeX: Analysis and Visualisation of Hydrogen/Deuterium Exchange Mass Spectrometry Data. R package version 1.0.
 
 ### Funding  
 

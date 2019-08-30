@@ -1,9 +1,10 @@
 Package: HaDeX
 Title: Analysis and Visualisation of Hydrogen/Deuterium Exchange Mass
         Spectrometry Data
-Version: 0.1
+Version: 1.0
 Authors@R: c(person("Weronika", "Puchala", 
            email = "puchala.weronika@gmail.com", 
+           comment = c(ORCID = "0000-0003-2163-1429"),
            role = c("cre", "aut")),
            person("Michal", "Burdukiewicz", 
            email = "michalburdukiewicz@gmail.com", 
@@ -24,13 +25,15 @@ LazyData: true
 RoxygenNote: 6.1.1
 Imports: data.table, dplyr, DT, ggplot2, gsubfn, latex2exp, reshape2,
         readr, readxl, shiny, stringr, tidyr
-Suggests: covr, digest, knitr, pander, rmarkdown, testthat, vdiffr
+Suggests: spelling, covr, digest, knitr, pander, rmarkdown,
+        shinycssloaders, testthat, vdiffr
 VignetteBuilder: knitr
+Language: en-US
 NeedsCompilation: no
-Packaged: 2019-07-03 14:41:45 UTC; pucha
-Author: Weronika Puchala [cre, aut],
+Packaged: 2019-08-30 11:49:59 UTC; User
+Author: Weronika Puchala [cre, aut] (<https://orcid.org/0000-0003-2163-1429>),
   Michal Burdukiewicz [aut] (<https://orcid.org/0000-0001-8926-582X>),
   Dominik Rafacz [ctb]
 Maintainer: Weronika Puchala <puchala.weronika@gmail.com>
 Repository: CRAN
-Date/Publication: 2019-07-04 09:10:03 UTC
+Date/Publication: 2019-08-30 12:10:02 UTC

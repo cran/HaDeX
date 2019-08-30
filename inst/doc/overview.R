@@ -3,6 +3,7 @@ library(HaDeX)
 library(ggplot2)
 library(knitr)
 library(DT)
+library(dplyr)
 opts_chunk$set(fig.width = 7, fig.height = 5)
 
 ## ----echo=FALSE,results='asis'-------------------------------------------
@@ -25,6 +26,16 @@ datatable(
 
 dat <- read_hdx(system.file(package = "HaDeX", 
                             "HaDeX/data/KD_190304_Nucb2_EDTA_CaCl2_test02_clusterdata.csv"))
+
+
+## ----warning=FALSE, message=FALSE, echo=FALSE----------------------------
+
+dat_temp <- read.csv(system.file(package = "HaDeX", 
+                            "HaDeX/data/KD_190304_Nucb2_EDTA_CaCl2_test02_clusterdata.csv"))
+
+dat_temp %>% 
+  filter(File == "KD_190119_gg_Nucb2_CaCl2_10s_01", Sequence == "KQFEHLNHQNPDTFEPKDLDML", Exposure == 0.167) %>%
+  select(Sequence, File, z, RT, Inten, Center)
 
 
 ## ----warning=FALSE-------------------------------------------------------
@@ -104,6 +115,56 @@ add_stat_dependency(calc_dat,
                    theoretical = FALSE, 
                    relative = TRUE)
 
+## ----warning = FALSE-----------------------------------------------------
+
+(kin_YYDEYL_gg_Nucb2_CaCl2 <- calculate_kinetics(dat = dat, 
+                                                protein = "db_Nucb2", 
+                                                sequence = "YYDEYL",
+                                                state = "gg_Nucb2_CaCl2", 
+                                                start = 45, 
+                                                end = 50, 
+                                                time_in = 0.001, 
+                                                time_out = 1440))
+
+## ----warning = FALSE-----------------------------------------------------
+
+(kin_YYDEYL_gg_Nucb2_EDTA <- calculate_kinetics(dat = dat, 
+                                              protein = "db_Nucb2", 
+                                              sequence = "YYDEYL",
+                                              state = "gg_Nucb2_EDTA", 
+                                              start = 45, 
+                                              end = 50, 
+                                              time_in = 0.001, 
+                                              time_out = 1440))
+
+## ----warning = FALSE-----------------------------------------------------
+
+bind_rows(kin_YYDEYL_gg_Nucb2_CaCl2, kin_YYDEYL_gg_Nucb2_EDTA) %>%
+  plot_kinetics(theoretical = TRUE, 
+                relative = TRUE)
+
+
+## ----warning = FALSE-----------------------------------------------------
+
+bind_rows(kin_YYDEYL_gg_Nucb2_CaCl2, kin_YYDEYL_gg_Nucb2_EDTA) %>%
+  plot_kinetics(theoretical = TRUE, 
+                relative = FALSE)
+
+
+## ----warning = FALSE-----------------------------------------------------
+
+bind_rows(kin_YYDEYL_gg_Nucb2_CaCl2, kin_YYDEYL_gg_Nucb2_EDTA) %>%
+  plot_kinetics(theoretical = FALSE, 
+                relative = TRUE)
+
+
+## ----warning = FALSE-----------------------------------------------------
+
+bind_rows(kin_YYDEYL_gg_Nucb2_CaCl2, kin_YYDEYL_gg_Nucb2_EDTA) %>%
+  plot_kinetics(theoretical = FALSE, 
+                relative = FALSE)
+
+
 ## ----warning=FALSE-------------------------------------------------------
 
 reconstruct_sequence(dat)
@@ -126,9 +187,9 @@ result <- quality_control(dat = dat,
 
 
 ## ----warning=FALSE-------------------------------------------------------
-ggplot(result[result["time"]>=1,]) + 
-  geom_line(aes(x = time, y = avg_err_state_first, color = "Average error (first state)")) +
-  geom_line(aes(x = time, y = avg_err_state_second, color = "Average error (second state)")) +
+ggplot(result[result["out_time"]>=1,]) + 
+  geom_line(aes(x = out_time, y = avg_err_state_first, color = "Average error (first state)")) +
+  geom_line(aes(x = out_time, y = avg_err_state_second, color = "Average error (second state)")) +
   scale_x_log10() +
   labs(x = "log(time) [min]", y = "Average uncertainty", title = "Uncertainty change") + 
   theme_bw(base_size = 11) +
@@ -232,8 +293,8 @@ woods_plot(calc_dat = calc_dat_1,
 # example quality control visualisation
 library(ggplot2)
 ggplot(result) + 
-  geom_line(aes(x = time, y = avg_err_state_first, color = "Average error (first state)")) +
-  geom_line(aes(x = time, y = avg_err_state_second, color = "Average error (second state)")) +
+  geom_line(aes(x = out_time, y = avg_err_state_first, color = "Average error (first state)")) +
+  geom_line(aes(x = out_time, y = avg_err_state_second, color = "Average error (second state)")) +
   scale_x_log10() +
   ylim(0, 0.05) + 
   labs(x = "log(time) [min]", y = "Average uncertainty", title = "Uncertainty change in out time") +
@@ -327,9 +388,9 @@ woods_plot(calc_dat = calc_dat_2,
 
 # example quality control visualisation - relative values
 library(ggplot2)
-ggplot(result[result["time"]>=1,]) + 
-  geom_line(aes(x = time, y = avg_err_state_first, color = "Average error (first state)")) +
-  geom_line(aes(x = time, y = avg_err_state_second, color = "Average error (second state)")) +
+ggplot(result[result["out_time"]>=1,]) + 
+  geom_line(aes(x = out_time, y = avg_err_state_first, color = "Average error (first state)")) +
+  geom_line(aes(x = out_time, y = avg_err_state_second, color = "Average error (second state)")) +
   scale_x_log10() +
   labs(x = "log(time) [min]", y = "Average uncertainty", title = "Uncertainty change") + 
   theme(legend.position = "bottom",
