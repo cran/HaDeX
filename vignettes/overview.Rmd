@@ -39,10 +39,10 @@ To show the novelty of HaDeX, we compare its functionalities with other relative
 ```{r echo=FALSE,results='asis'}
 read.csv2("comparison.csv") %>% 
   datatable(options = list(dom = "t", ordering = FALSE, paging = FALSE), rownames = FALSE, style = "bootstrap") %>%
-  formatStyle(c("MEMHDX", "Deuteros", "HaDeX"), backgroundColor = styleEqual(c("Yes", "No"), c("#00BFFF", "#FF8C91")))
+  formatStyle(c("MSTools", "MEMHDX", "Deuteros", "HaDeX"), backgroundColor = styleEqual(c("Yes", "No"), c("#00BFFF", "#FF8C91")))
 ```
 
-We have not considered HDX Workbench [@PascalHDXWorkbenchSoftware2012] as it deals with the preliminary steps of the analysis.
+We have not considered HDX Workbench [@PascalHDXWorkbenchSoftware2012] as it deals with the preliminary steps of the analysis. This comparison also does not cover a versatile structural visualisation tool for HDX-MS results, HDX-Viewer [@BouyssieHDXViewerinteractive3D2019] as its scope is different from the tools mentioned above. 
 
 **Web server:** a software is available as a web server.
 
@@ -111,7 +111,7 @@ dat <- read_hdx(system.file(package = "HaDeX",
 
 ```
 
-Currently, [read_hdx()](https://hadexversum.github.io/HaDeX/reference/read_hdx.html) supports .csv, .tsv and .xls files fulfilling the data structure described above. 
+Currently, [read_hdx()](https://hadexversum.github.io/HaDeX/reference/read_hdx.html) supports .csv, .tsv and .xls files fulfilling the data structure described above. Files with data from multiple proteins are supported. The user need to indicate which protein is of interest for calculations. 
 
 ## Computation of deuteration levels
 
@@ -494,8 +494,11 @@ The user can choose which state (or states) should be included in these plots. I
 
 ### Quality control 
 
-The function [quality_control()](https://hadexversum.github.io/HaDeX/reference/quality_control.html) plots the change in uncertainty of deuteration levels as a function of incubation time. The uncertainty is averaged over all peptides available at a given time point in a selected state. 
-Therefore, the user can detect a time point after which the decrease of the deuteration uncertainty becomes too marginal to prolong the measurements. This function is most useful in case of multiple measurements of the same or very similar proteins because it helps to optimize the duration of the incubation.
+The function [quality_control()](https://hadexversum.github.io/HaDeX/reference/quality_control.html) plots the change in the uncertainty of deuteration levels as a function of incubation time. The uncertainty is averaged over all peptides available at a given time point in a selected state. This chart has a double function: firstly, it allows checking if the measurement uncertainty is decreasing over time (which is the expected behavior) and the second one helps to plan the appropriate incubation length for the tested protein (whether we obtain the desired data reliability values).
+
+In HDX-MS experiments, the average uncertainty of measurements decreases over time as the sample is more and more deuterated (even accounting for the back-propagation). Therefore, if the level of uncertainty is stable, the exchange is still ongoing and it would be advisable to prolong the reaction.
+
+Moreover, the user can detect a time point after which the decrease of the deuteration uncertainty becomes too marginal to prolong the measurements. This function is most useful in case of multiple measurements of the same or very similar proteins because it helps to optimize the duration of the incubation.
 The result of this function can be easily visualized.
 
 Example:
@@ -504,14 +507,13 @@ Example:
 result <- quality_control(dat = dat,
                           state_first = "gg_Nucb2_EDTA",
                           state_second = "gg_Nucb2_CaCl2", 
-                          chosen_time = 25, 
-                          in_time = 0.001, 
-                          relative = TRUE)
+                          chosen_time = 1, 
+                          in_time = 0.001)
 
 ```
 
 ```{r warning=FALSE}
-ggplot(result[result["out_time"]>=1,]) + 
+ggplot(result) + 
   geom_line(aes(x = out_time, y = avg_err_state_first, color = "Average error (first state)")) +
   geom_line(aes(x = out_time, y = avg_err_state_second, color = "Average error (second state)")) +
   scale_x_log10() +
@@ -521,12 +523,32 @@ ggplot(result[result["out_time"]>=1,]) +
         legend.title = element_blank())
 ```
 
-This example is based on relative values. Although HaDeX can provide results in absolute values, be aware that absolute calculations do not
-encompass time out, so the uncertainty does not change with $D_{t_{out}}$. 
+The chart below shows how we interpret the three most common results of quality control.
+
+```{r warning=FALSE,echo=FALSE}
+example_qc <- rbind(data.frame(x = c(10, 25, 60, 1440),
+                               y = c(0.008, 0.0075, 0.007, 0.0065),
+                               type = "Uncertainty decreases too slowly\nExperiment should be prolonged",
+                               Assessment = "Alter experimental settings"),
+                    data.frame(x = c(10, 25, 60, 1440),
+                               y = c(0.008, 0.001, 0.001, 0.001),
+                               type = "Uncertainty decreases too quickly\nExperiment should have more early timepoints",
+                               Assessment = "Alter experimental settings"),
+                    data.frame(x = c(10, 25, 60, 1440),
+                               y = c(0.008, 0.004, 0.003, 0.001),
+                               type = "Uncertainty decreases properly",
+                               Assessment = "Experiment conducted properly"))
+ggplot(example_qc, aes(x = x, y = y, color = Assessment)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~ type, ncol = 1) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
 
 # HaDeX Graphical User Interface
 
-The HaDeX Shiny app is launched by the [HaDeX_gui()](https://hadexversum.github.io/HaDeX/reference/HaDeX_gui.html) function or available at MS Lab website: http://mslab-ibb.pl/shiny/HaDeX/.
+The HaDeX Shiny app is launched by the [HaDeX_gui()](https://hadexversum.github.io/HaDeX/reference/HaDeX_gui.html) function or available at MS Lab website: http://mslab-ibb.pl/shiny/HaDeX/. In the Input Data tab the user can adjust parameters to be propagated for the whole analysis.
 
 # Examples
 

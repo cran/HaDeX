@@ -13,11 +13,13 @@
 #' @param end end of given sequence
 #' @param time_in time in for experimental calculations
 #' @param time_out time out for experimental calculations
+#' @param deut_part percentage of deuterium the protein was exposed to, value in range [0, 1]
 #' 
 #' @details The function calculates deuteration data for all available data points 
 #' for given peptide. 
 #' All four variants (relative & theoretical combinations) of deuteration computations 
-#' are supported.
+#' are supported. Manual correction of percentage of deuterium the protein was exposed 
+#' to during the exchange in theoretical calculations is provided.
 #' To visualize obtained data we recommend using \code{\link{plot_kinetics}} function.
 #' The first version doesn't support filled Modification and Fragment columns.
 #' 
@@ -81,10 +83,12 @@ calculate_kinetics <- function(dat,
                                start, 
                                end,
                                time_in, 
-                               time_out) {
+                               time_out, 
+                               deut_part = 1) {
   
   prep_dat <- dat %>%
-    filter(Sequence == sequence, 
+    filter(Protein == protein,
+           Sequence == sequence, 
            State == state,
            Start == start, 
            End == end)
@@ -100,7 +104,8 @@ calculate_kinetics <- function(dat,
                                 state = state, 
                                 time_in = time_in, 
                                 time_chosen = time_point, 
-                                time_out = time_out) %>%
+                                time_out = time_out,
+                                deut_part = deut_part) %>%
       mutate(time_chosen = time_point) 
     
   })) %>%

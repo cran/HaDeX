@@ -9,7 +9,7 @@ opts_chunk$set(fig.width = 7, fig.height = 5)
 ## ----echo=FALSE,results='asis'-------------------------------------------
 read.csv2("comparison.csv") %>% 
   datatable(options = list(dom = "t", ordering = FALSE, paging = FALSE), rownames = FALSE, style = "bootstrap") %>%
-  formatStyle(c("MEMHDX", "Deuteros", "HaDeX"), backgroundColor = styleEqual(c("Yes", "No"), c("#00BFFF", "#FF8C91")))
+  formatStyle(c("MSTools", "MEMHDX", "Deuteros", "HaDeX"), backgroundColor = styleEqual(c("Yes", "No"), c("#00BFFF", "#FF8C91")))
 
 ## ----warning=FALSE, message=FALSE, echo = FALSE--------------------------
 
@@ -181,13 +181,12 @@ plot_position_frequency(dat, chosen_state = "gg_Nucb2_CaCl2")
 result <- quality_control(dat = dat,
                           state_first = "gg_Nucb2_EDTA",
                           state_second = "gg_Nucb2_CaCl2", 
-                          chosen_time = 25, 
-                          in_time = 0.001, 
-                          relative = TRUE)
+                          chosen_time = 1, 
+                          in_time = 0.001)
 
 
 ## ----warning=FALSE-------------------------------------------------------
-ggplot(result[result["out_time"]>=1,]) + 
+ggplot(result) + 
   geom_line(aes(x = out_time, y = avg_err_state_first, color = "Average error (first state)")) +
   geom_line(aes(x = out_time, y = avg_err_state_second, color = "Average error (second state)")) +
   scale_x_log10() +
@@ -195,6 +194,26 @@ ggplot(result[result["out_time"]>=1,]) +
   theme_bw(base_size = 11) +
   theme(legend.position = "bottom",
         legend.title = element_blank())
+
+## ----warning=FALSE,echo=FALSE--------------------------------------------
+example_qc <- rbind(data.frame(x = c(10, 25, 60, 1440),
+                               y = c(0.008, 0.0075, 0.007, 0.0065),
+                               type = "Uncertainty decreases too slowly\nExperiment should be prolonged",
+                               Assessment = "Alter experimental settings"),
+                    data.frame(x = c(10, 25, 60, 1440),
+                               y = c(0.008, 0.001, 0.001, 0.001),
+                               type = "Uncertainty decreases too quickly\nExperiment should have more early timepoints",
+                               Assessment = "Alter experimental settings"),
+                    data.frame(x = c(10, 25, 60, 1440),
+                               y = c(0.008, 0.004, 0.003, 0.001),
+                               type = "Uncertainty decreases properly",
+                               Assessment = "Experiment conducted properly"))
+ggplot(example_qc, aes(x = x, y = y, color = Assessment)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~ type, ncol = 1) +
+  theme_bw() +
+  theme(legend.position = "bottom")
 
 ## ----warning=FALSE-------------------------------------------------------
 library(HaDeX)
