@@ -1,4 +1,4 @@
-## ---- echo = FALSE, message = FALSE, results='asis'----------------------
+## ---- echo = FALSE, message = FALSE, results='asis'---------------------------
 library(HaDeX)
 library(ggplot2)
 library(knitr)
@@ -6,12 +6,12 @@ library(DT)
 library(dplyr)
 opts_chunk$set(fig.width = 7, fig.height = 5)
 
-## ----echo=FALSE,results='asis'-------------------------------------------
+## ----echo=FALSE,results='asis'------------------------------------------------
 read.csv2("comparison.csv") %>% 
   datatable(options = list(dom = "t", ordering = FALSE, paging = FALSE), rownames = FALSE, style = "bootstrap") %>%
   formatStyle(c("MSTools", "MEMHDX", "Deuteros", "HaDeX"), backgroundColor = styleEqual(c("Yes", "No"), c("#00BFFF", "#FF8C91")))
 
-## ----warning=FALSE, message=FALSE, echo = FALSE--------------------------
+## ----warning=FALSE, message=FALSE, echo = FALSE-------------------------------
 
 datatable(
   data = data.frame("Column Name" = c("Protein", "Start", "End", "Sequence", "Modification", "Fragment", "MaxUptake", "MHP", 
@@ -22,13 +22,13 @@ datatable(
   list(dom = "t", ordering = FALSE, paging = FALSE, autoWidth = TRUE))
 
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 
 dat <- read_hdx(system.file(package = "HaDeX", 
                             "HaDeX/data/KD_190304_Nucb2_EDTA_CaCl2_test02_clusterdata.csv"))
 
 
-## ----warning=FALSE, message=FALSE, echo=FALSE----------------------------
+## ----warning=FALSE, message=FALSE, echo=FALSE---------------------------------
 
 dat_temp <- read.csv(system.file(package = "HaDeX", 
                             "HaDeX/data/KD_190304_Nucb2_EDTA_CaCl2_test02_clusterdata.csv"))
@@ -38,7 +38,7 @@ dat_temp %>%
   select(Sequence, File, z, RT, Inten, Center)
 
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 calc_dat <- prepare_dataset(dat,
                             in_state_first = "gg_Nucb2_EDTA_0.001",
                             chosen_state_first = "gg_Nucb2_EDTA_25",
@@ -47,7 +47,7 @@ calc_dat <- prepare_dataset(dat,
                             chosen_state_second = "gg_Nucb2_CaCl2_25",
                             out_state_second = "gg_Nucb2_CaCl2_1440") 
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 comparison_plot(calc_dat = calc_dat,
                 theoretical = TRUE,
                 relative = TRUE,
@@ -55,7 +55,7 @@ comparison_plot(calc_dat = calc_dat,
                 state_second = "Nucb2 Factor 2") +
   labs(title = "Theoretical fraction exchanged in state comparison in 25 min time")
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 comparison_plot(calc_dat = calc_dat,
                 theoretical = TRUE,
                 relative = FALSE,
@@ -63,7 +63,7 @@ comparison_plot(calc_dat = calc_dat,
                 state_second = "Nucb2 Factor 2") +
   labs(title = "Theoretical fraction exchanged in state comparison in 25 min time")
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 comparison_plot(calc_dat = calc_dat,
                 theoretical = FALSE,
                 relative = TRUE, 
@@ -71,7 +71,7 @@ comparison_plot(calc_dat = calc_dat,
                 state_second = "Nucb2 Factor 2") +
   labs(title = "Fraction exchanged in state comparison in 25 min time")
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 comparison_plot(calc_dat = calc_dat,
                 theoretical = FALSE,
                 relative = FALSE, 
@@ -79,43 +79,43 @@ comparison_plot(calc_dat = calc_dat,
                 state_second = "Nucb2 Factor 2") +
   labs(title = "Fraction exchanged in state comparison in 25 min time")
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 woods_plot(calc_dat = calc_dat,
            theoretical = TRUE,
            relative = TRUE) +
   labs(title = "Theoretical fraction exchanged between states in 25 min time")
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 woods_plot(calc_dat = calc_dat,
            theoretical = TRUE,
            relative = FALSE) +
   labs(title = "Theoretical fraction exchanged between states in 25 min time")
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 woods_plot(calc_dat = calc_dat,
            theoretical = FALSE, 
            relative = TRUE) +
   labs(title = "Theoretical fraction exchanged between states in 25 min time")
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 woods_plot(calc_dat = calc_dat,
            theoretical = FALSE, 
            relative = FALSE) +
   labs(title = "Theoretical fraction exchanged between states in 25 min time")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 calculate_confidence_limit_values(calc_dat = calc_dat,
                                   confidence_limit = 0.99,
                                   theoretical = FALSE, 
                                   relative = TRUE)  
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 add_stat_dependency(calc_dat, 
                    confidence_limit = 0.98, 
                    theoretical = FALSE, 
                    relative = TRUE)
 
-## ----warning = FALSE-----------------------------------------------------
+## ----warning = FALSE----------------------------------------------------------
 
 (kin_YYDEYL_gg_Nucb2_CaCl2 <- calculate_kinetics(dat = dat, 
                                                 protein = "db_Nucb2", 
@@ -126,7 +126,7 @@ add_stat_dependency(calc_dat,
                                                 time_in = 0.001, 
                                                 time_out = 1440))
 
-## ----warning = FALSE-----------------------------------------------------
+## ----warning = FALSE----------------------------------------------------------
 
 (kin_YYDEYL_gg_Nucb2_EDTA <- calculate_kinetics(dat = dat, 
                                               protein = "db_Nucb2", 
@@ -137,47 +137,47 @@ add_stat_dependency(calc_dat,
                                               time_in = 0.001, 
                                               time_out = 1440))
 
-## ----warning = FALSE-----------------------------------------------------
+## ----warning = FALSE----------------------------------------------------------
 
 bind_rows(kin_YYDEYL_gg_Nucb2_CaCl2, kin_YYDEYL_gg_Nucb2_EDTA) %>%
   plot_kinetics(theoretical = TRUE, 
                 relative = TRUE)
 
 
-## ----warning = FALSE-----------------------------------------------------
+## ----warning = FALSE----------------------------------------------------------
 
 bind_rows(kin_YYDEYL_gg_Nucb2_CaCl2, kin_YYDEYL_gg_Nucb2_EDTA) %>%
   plot_kinetics(theoretical = TRUE, 
                 relative = FALSE)
 
 
-## ----warning = FALSE-----------------------------------------------------
+## ----warning = FALSE----------------------------------------------------------
 
 bind_rows(kin_YYDEYL_gg_Nucb2_CaCl2, kin_YYDEYL_gg_Nucb2_EDTA) %>%
   plot_kinetics(theoretical = FALSE, 
                 relative = TRUE)
 
 
-## ----warning = FALSE-----------------------------------------------------
+## ----warning = FALSE----------------------------------------------------------
 
 bind_rows(kin_YYDEYL_gg_Nucb2_CaCl2, kin_YYDEYL_gg_Nucb2_EDTA) %>%
   plot_kinetics(theoretical = FALSE, 
                 relative = FALSE)
 
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 
 reconstruct_sequence(dat)
 
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 
 plot_coverage(dat, chosen_state = "gg_Nucb2_CaCl2")
 
 plot_position_frequency(dat, chosen_state = "gg_Nucb2_CaCl2")
 
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 result <- quality_control(dat = dat,
                           state_first = "gg_Nucb2_EDTA",
                           state_second = "gg_Nucb2_CaCl2", 
@@ -185,7 +185,7 @@ result <- quality_control(dat = dat,
                           in_time = 0.001)
 
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 ggplot(result) + 
   geom_line(aes(x = out_time, y = avg_err_state_first, color = "Average error (first state)")) +
   geom_line(aes(x = out_time, y = avg_err_state_second, color = "Average error (second state)")) +
@@ -195,7 +195,7 @@ ggplot(result) +
   theme(legend.position = "bottom",
         legend.title = element_blank())
 
-## ----warning=FALSE,echo=FALSE--------------------------------------------
+## ----warning=FALSE,echo=FALSE-------------------------------------------------
 example_qc <- rbind(data.frame(x = c(10, 25, 60, 1440),
                                y = c(0.008, 0.0075, 0.007, 0.0065),
                                type = "Uncertainty decreases too slowly\nExperiment should be prolonged",
@@ -215,19 +215,19 @@ ggplot(example_qc, aes(x = x, y = y, color = Assessment)) +
   theme_bw() +
   theme(legend.position = "bottom")
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 library(HaDeX)
 
 # file import
 dat_1 <- read_hdx(system.file(package = "HaDeX", 
                               "HaDeX/data/KD_180110_CD160_HVEM.csv"))
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 reconstruct_sequence(dat_1)
 
 plot_position_frequency(dat_1, chosen_state = "CD160")
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 # calculate data
 calc_dat_1 <- prepare_dataset(dat = dat_1,
                               in_state_first = "CD160_0.001",
@@ -245,7 +245,7 @@ comparison_plot(calc_dat = calc_dat_1,
                 state_second = "CD160_HVEM")
 
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 # experimental comparison plot - relative values
 comparison_plot(calc_dat = calc_dat_1,
                 theoretical = FALSE,
@@ -254,7 +254,7 @@ comparison_plot(calc_dat = calc_dat_1,
                 state_second = "CD160_HVEM")
 
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 # theoretical comparison plot - absolute values
 comparison_plot(calc_dat = calc_dat_1,
                 theoretical = TRUE,
@@ -271,7 +271,7 @@ comparison_plot(calc_dat = calc_dat_1,
 
 
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
   
 
 # theoretical Woods plot - relative values
@@ -281,7 +281,7 @@ woods_plot(calc_dat = calc_dat_1,
   coord_cartesian(ylim = c(-.2, .2))
 
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 # experimental Woods plot - relative values
 woods_plot(calc_dat = calc_dat_1,
            theoretical = FALSE,
@@ -289,7 +289,7 @@ woods_plot(calc_dat = calc_dat_1,
   coord_cartesian(ylim = c(-.2, .2))
 
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 # theoretical Woods plot - absolute values
 woods_plot(calc_dat = calc_dat_1,
            theoretical = TRUE, 
@@ -321,7 +321,7 @@ ggplot(result) +
         legend.position = "bottom")
 
 
-## ----warning=FALSE-------------------------------------------------------
+## ----warning=FALSE------------------------------------------------------------
 library(HaDeX)
 
 # file import
