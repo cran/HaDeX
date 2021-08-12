@@ -1,10 +1,11 @@
-## ---- echo = FALSE, message = FALSE, results='asis'---------------------------
+## ---- echo = FALSE, message = FALSE, warning = FALSE, results='asis'----------
 library(HaDeX)
 library(ggplot2)
 library(knitr)
 library(DT)
 library(dplyr)
 opts_chunk$set(fig.width = 7, fig.height = 5)
+knitr::opts_chunk$set(dev = "png", dev.args = list(type = "cairo-png"))
 
 ## ----echo=FALSE,results='asis'------------------------------------------------
 read.csv2("comparison.csv") %>% 
@@ -66,7 +67,7 @@ comparison_plot(calc_dat = calc_dat,
 ## ----warning=FALSE------------------------------------------------------------
 comparison_plot(calc_dat = calc_dat,
                 theoretical = FALSE,
-                relative = TRUE, 
+                relative = TRUE,
                 state_first = "Nucb2 Factor 1",
                 state_second = "Nucb2 Factor 2") +
   labs(title = "Fraction exchanged in state comparison in 25 min time")
