@@ -1,4 +1,4 @@
-## ---- echo = FALSE, message = FALSE, warning = FALSE, results='asis'----------
+## ----echo = FALSE, message = FALSE, warning = FALSE, results='asis'-----------
 library(HaDeX)
 library(ggplot2)
 library(knitr)

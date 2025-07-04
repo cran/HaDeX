@@ -52,7 +52,7 @@ library(HaDeX)
 dat <- read_hdx(system.file(package = "HaDeX", "HaDeX/data/KD_180110_CD160_HVEM.csv"))
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  avg_exp_mass = weighted.mean(exp_mass, Inten, na.rm = TRUE)
+# avg_exp_mass = weighted.mean(exp_mass, Inten, na.rm = TRUE)
 
 ## ----include=FALSE------------------------------------------------------------
 dat_no_weight <- calculate_mass_no_inten(dat) %>%

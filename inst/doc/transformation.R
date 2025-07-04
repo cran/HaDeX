@@ -2,7 +2,7 @@
 knitr::opts_chunk$set(echo = FALSE)
 knitr::opts_chunk$set(dev = "png", dev.args = list(type = "cairo-png"))
 
-## ---- echo=FALSE, message=FALSE, warning=FALSE--------------------------------
+## ----echo=FALSE, message=FALSE, warning=FALSE---------------------------------
 library(HaDeX)
 library(dplyr) 
 library(ggplot2)
